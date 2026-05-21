@@ -2,15 +2,19 @@ class Manutencao {
   int? id;
   String veiculo;
   String descricao;
-  String data;
-  double valor;
+  DateTime data;
+  double? custo;
+  int? km;
+  String status;
 
   Manutencao({
     this.id,
     required this.veiculo,
     required this.descricao,
     required this.data,
-    required this.valor,
+    this.custo,
+    this.km,
+    this.status = 'pendente',
   });
 
   Map<String, dynamic> toMap() {
@@ -18,8 +22,10 @@ class Manutencao {
       'id': id,
       'veiculo': veiculo,
       'descricao': descricao,
-      'data': data,
-      'valor': valor,
+      'data': data.toIso8601String(),
+      'custo': custo,
+      'km': km,
+      'status': status,
     };
   }
 
@@ -28,8 +34,12 @@ class Manutencao {
       id: map['id'],
       veiculo: map['veiculo'],
       descricao: map['descricao'],
-      data: map['data'],
-      valor: map['valor'] is int ? (map['valor'] as int).toDouble() : map['valor'],
+      data: DateTime.parse(map['data']),
+      custo: map['custo'] != null
+          ? (map['custo'] as num).toDouble()
+          : null,
+      km: map['km'],
+      status: map['status'] ?? 'pendente',
     );
   }
 }

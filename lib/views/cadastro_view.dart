@@ -16,26 +16,39 @@ class _CadastroViewState extends State<CadastroView> {
 
   late TextEditingController veiculo;
   late TextEditingController descricao;
-  late TextEditingController data;
-  late TextEditingController valor;
+  late TextEditingController custo;
+  late TextEditingController km;
 
   @override
   void initState() {
     super.initState();
-    // Preenche os campos se for edição, senão deixa vazio
-    veiculo = TextEditingController(text: widget.manutencaoParaEdicao?.veiculo ?? '');
-    descricao = TextEditingController(text: widget.manutencaoParaEdicao?.descricao ?? '');
-    data = TextEditingController(text: widget.manutencaoParaEdicao?.data ?? '');
-    valor = TextEditingController(text: widget.manutencaoParaEdicao?.valor.toString() ?? '');
+
+    veiculo = TextEditingController(
+      text: widget.manutencaoParaEdicao?.veiculo ?? '',
+    );
+
+    descricao = TextEditingController(
+      text: widget.manutencaoParaEdicao?.descricao ?? '',
+    );
+
+    custo = TextEditingController(
+      text: widget.manutencaoParaEdicao?.custo?.toString() ?? '',
+    );
+
+    km = TextEditingController(
+      text: widget.manutencaoParaEdicao?.km?.toString() ?? '',
+    );
   }
 
   void salvar() async {
     final m = Manutencao(
-      id: widget.manutencaoParaEdicao?.id, // Importante: mantém o ID na edição
+      id: widget.manutencaoParaEdicao?.id,
       veiculo: veiculo.text,
       descricao: descricao.text,
-      data: data.text,
-      valor: double.tryParse(valor.text) ?? 0.0,
+      data: DateTime.now(),
+      custo: double.tryParse(custo.text),
+      km: int.tryParse(km.text),
+      status: 'pendente',
     );
 
     if (widget.manutencaoParaEdicao == null) {
@@ -57,8 +70,8 @@ class _CadastroViewState extends State<CadastroView> {
           children: [
             TextField(controller: veiculo, decoration: const InputDecoration(labelText: 'Veículo')),
             TextField(controller: descricao, decoration: const InputDecoration(labelText: 'Descrição')),
-            TextField(controller: data, decoration: const InputDecoration(labelText: 'Data')),
-            TextField(controller: valor, decoration: const InputDecoration(labelText: 'Valor'), keyboardType: TextInputType.number),
+            TextField(controller: custo, decoration: const InputDecoration(labelText: 'Custo'), keyboardType: TextInputType.number,),
+            TextField(controller: km, decoration: const InputDecoration(labelText: 'KM'), keyboardType: TextInputType.number,),
             const SizedBox(height: 20),
             ElevatedButton(onPressed: salvar, child: const Text('Salvar')),
           ],

@@ -21,14 +21,16 @@ class DatabaseHelper {
       version: 1,
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE manutencoes(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            veiculo TEXT,
-            descricao TEXT,
-            data TEXT,
-            valor REAL
-          )
-        ''');
+  CREATE TABLE manutencoes(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    veiculo TEXT,
+    descricao TEXT,
+    data TEXT,
+    custo REAL,
+    km INTEGER,
+    status TEXT
+  )
+''');
       },
     );
   }

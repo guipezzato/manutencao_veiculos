@@ -21,7 +21,12 @@ class ManutencaoController {
 
   Future<List<Manutencao>> listar() async {
     final database = await db.database;
-    final result = await database.query('manutencoes');
+
+    final result = await database.query(
+      'manutencoes',
+      orderBy: 'data DESC',
+    );
+
     return result.map((e) => Manutencao.fromMap(e)).toList();
   }
 
