@@ -30,6 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # As bibliotecas abaixo devem ter exatamente 2 espaços de recuo (alinhadas com "flutter:")
+  fl_chart: ^0.70.0
   sqflite: ^2.3.0
   path: ^1.9.0
 

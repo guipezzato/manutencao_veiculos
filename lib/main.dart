@@ -29,7 +29,6 @@ class ManutencaoApp extends StatelessWidget {
       theme: AppTheme.light,
       home: const MainShell(),
       routes: {
-        '/cadastro': (context) => const CadastroView(),
         '/lista': (context) => const ListaView(),
         '/abastecimento': (context) => const AbastecimentoView(),
         '/relatorio': (context) => const RelatorioView(),
@@ -48,13 +47,30 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeView(),
-    ListaView(),
-    CadastroView(),
-    AbastecimentoView(),
-    RelatorioView(),
-  ];
+  // GlobalKey para acessar o _load() da HomeView após salvar
+  final GlobalKey<HomeViewState> _homeKey = GlobalKey<HomeViewState>();
+
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeView(key: _homeKey),
+      const ListaView(),
+      CadastroView(onSaved: _aoSalvar),
+      const AbastecimentoView(),
+      const RelatorioView(),
+    ];
+  }
+
+  // Chamado pelo CadastroView após salvar com sucesso
+  void _aoSalvar() {
+    // Recarrega a lista da HomeView
+    _homeKey.currentState?.load();
+    // Volta para a aba Home
+    setState(() => _currentIndex = 0);
+  }
 
   @override
   Widget build(BuildContext context) {

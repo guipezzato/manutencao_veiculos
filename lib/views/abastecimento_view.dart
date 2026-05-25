@@ -59,6 +59,7 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
     with SingleTickerProviderStateMixin {
   late TabController _tab;
   final _formKey = GlobalKey<FormState>();
+  final _editFormKey = GlobalKey<FormState>(); // Chave para o formulário de edição
 
   final _veiculoCtrl = TextEditingController();
   final _litrosCtrl = TextEditingController();
@@ -162,6 +163,193 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
     } finally {
       setState(() => _saving = false);
     }
+  }
+
+  // 1. MENU SUPERIOR INFERIOR (OPÇÕES)
+  void _mostrarOpcoes(Abastecimento a) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit_rounded, color: AppTheme.primary),
+                title: const Text('Editar abastecimento'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _abrirFormularioEdicao(a);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_forever_rounded, color: AppTheme.red),
+                title: const Text('Excluir registro', style: TextStyle(color: AppTheme.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmarExclusao(a);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 2. DIÁLOGO COM FORMULÁRIO COMPLETO PARA EDIÇÃO
+  void _abrirFormularioEdicao(Abastecimento a) {
+    final eVeiculoCtrl = TextEditingController(text: a.veiculo);
+    final eLitrosCtrl = TextEditingController(text: a.litros.toString());
+    final eValorCtrl = TextEditingController(text: a.valorTotal.toString());
+    final eKmCtrl = TextEditingController(text: a.kmAtual.toString());
+    final ePostoCtrl = TextEditingController(text: a.posto ?? '');
+    String eCombustivel = a.tipoCombustivel;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Editar Abastecimento'),
+          content: Form(
+            key: _editFormKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: eVeiculoCtrl,
+                    decoration: const InputDecoration(labelText: 'Veículo'),
+                    validator: (v) => v == null || v.isEmpty ? 'Informe o veículo' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: eLitrosCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Litros'),
+                          validator: (v) => v == null || v.isEmpty ? 'Informe os litros' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: eValorCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Total (R\$)'),
+                          validator: (v) => v == null || v.isEmpty ? 'Informe o valor' : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: eKmCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'KM atual'),
+                    validator: (v) => v == null || v.isEmpty ? 'Informe o KM' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: eCombustivel,
+                    decoration: const InputDecoration(labelText: 'Combustível'),
+                    items: ['Gasolina', 'Etanol', 'Diesel', 'GNV']
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
+                    onChanged: (v) => setDialogState(() => eCombustivel = v!),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: ePostoCtrl,
+                    decoration: const InputDecoration(labelText: 'Posto (opcional)'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (!_editFormKey.currentState!.validate()) return;
+                Navigator.pop(context);
+                setState(() => _loading = true);
+
+                try {
+                  final db = await DatabaseHelper.instance.database;
+                  await db.update(
+                    'abastecimento',
+                    {
+                      'veiculo': eVeiculoCtrl.text.trim(),
+                      'litros': double.parse(eLitrosCtrl.text.replaceAll(',', '.')),
+                      'valor_total': double.parse(eValorCtrl.text.replaceAll(',', '.')),
+                      'km_atual': int.parse(eKmCtrl.text),
+                      'tipo_combustivel': eCombustivel,
+                      'posto': ePostoCtrl.text.trim().isEmpty ? null : ePostoCtrl.text.trim(),
+                    },
+                    where: 'id = ?',
+                    whereArgs: [a.id],
+                  );
+                  await _loadHistorico();
+                } catch (e) {
+                  setState(() => _loading = false);
+                }
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 3. CONFIRMAÇÃO DE EXCLUSÃO NO SQLITE
+  Future<void> _confirmarExclusao(Abastecimento a) async {
+    if (a.id == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir Abastecimento?'),
+        content: const Text('Tem certeza que deseja apagar esse registro de combustível?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() => _loading = true);
+
+              final db = await DatabaseHelper.instance.database;
+              await db.delete('abastecimento', where: 'id = ?', whereArgs: [a.id]);
+
+              await _loadHistorico();
+            },
+            child: const Text('Excluir', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   double get _consumoMedio {
@@ -392,72 +580,76 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
           if (diff > 0) consumo = diff / a.litros;
         }
 
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.border),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryLight,
-                  borderRadius: BorderRadius.circular(12),
+        return InkWell(
+          onTap: () => _mostrarOpcoes(a), // 👈 Ativa o clique para Editar/Deletar
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.local_gas_station_rounded, color: AppTheme.primary, size: 22),
                 ),
-                child: const Icon(Icons.local_gas_station_rounded, color: AppTheme.primary, size: 22),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${a.tipoCombustivel} · ${a.litros.toStringAsFixed(1)}L',
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                      ),
+                      Text(
+                        '${a.veiculo} · ${_fmtDate(a.data)}${a.posto != null ? ' · ${a.posto}' : ''}',
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                      ),
+                      Text(
+                        'R\$ ${a.precoPorLitro.toStringAsFixed(2)}/L · ${a.kmAtual} km',
+                        style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${a.tipoCombustivel} · ${a.litros.toStringAsFixed(1)}L',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                      'R\$ ${a.valorTotal.toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                     ),
-                    Text(
-                      '${a.veiculo} · ${_fmtDate(a.data)}${a.posto != null ? ' · ${a.posto}' : ''}',
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-                    ),
-                    Text(
-                      'R\$ ${a.precoPorLitro.toStringAsFixed(2)}/L · ${a.kmAtual} km',
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'R\$ ${a.valorTotal.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-                  ),
-                  if (consumo != null) ...[
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: consumo >= 10 ? AppTheme.greenLight : AppTheme.amberLight,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${consumo.toStringAsFixed(1)} km/L',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: consumo >= 10 ? AppTheme.green : AppTheme.amber,
+                    if (consumo != null) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: consumo >= 10 ? AppTheme.greenLight : AppTheme.amberLight,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${consumo.toStringAsFixed(1)} km/L',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: consumo >= 10 ? AppTheme.green : AppTheme.amber,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         );
       },
