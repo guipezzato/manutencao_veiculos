@@ -111,7 +111,7 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
 
   Future<void> _loadHistorico() async {
     final db = await DatabaseHelper.instance.database;
-    final rows = await db.query('abastecimento', orderBy: 'data DESC');
+    final rows = await db.query('abastecimento', orderBy: 'data DESC, id DESC');
     setState(() {
       _historico = rows.map(Abastecimento.fromMap).toList();
       _loading = false;
@@ -360,7 +360,7 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
       final diff = _historico[i].kmAtual - _historico[i + 1].kmAtual;
       if (diff > 0) {
         totalKm += diff;
-        totalLitros += _historico[i].litros;
+        totalLitros += _historico[i + 1].litros; // 👈 era _historico[i].litros
       }
     }
     return totalLitros > 0 ? totalKm / totalLitros : 0;
@@ -478,7 +478,7 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
                   const Icon(Icons.calculate_outlined, size: 16, color: AppTheme.primary),
                   const SizedBox(width: 8),
                   Text(
-                    'Preço por litro: R\$ ${precoPorLitro.toStringAsFixed(3)}',
+                    'Preço por litro: R\$ ${precoPorLitro.toStringAsFixed(2).replaceAll('.', ',')}',
                     style: const TextStyle(
                       fontSize: 13,
                       color: AppTheme.primary,
@@ -577,7 +577,7 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
         double? consumo;
         if (i < _historico.length - 1) {
           final diff = a.kmAtual - _historico[i + 1].kmAtual;
-          if (diff > 0) consumo = diff / a.litros;
+          if (diff > 0) consumo = diff / _historico[i + 1].litros;
         }
 
         return InkWell(

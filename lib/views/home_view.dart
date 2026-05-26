@@ -342,7 +342,7 @@ class HomeViewState extends State<HomeView> {
           iconColor: AppTheme.green,
           iconBg: AppTheme.greenLight,
           label: 'Gasto este mês',
-          value: 'R\$ ${_totalMes.toStringAsFixed(0)}',
+          value: 'R\$ ${_totalMes.toStringAsFixed(2).replaceAll('.', ',')}',
         ),
         _summaryCard(
           icon: Icons.check_circle_rounded,
@@ -521,7 +521,7 @@ class HomeViewState extends State<HomeView> {
               ),
             ),
             if (m.custo != null)
-              Text('R\$ ${m.custo!.toStringAsFixed(0)}',
+              Text('R\$ ${m.custo!.toStringAsFixed(2).replaceAll('.', ',')}',
                   style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,

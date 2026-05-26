@@ -6,6 +6,7 @@ import 'views/cadastro_view.dart';
 import 'views/lista_view.dart';
 import 'views/abastecimento_view.dart';
 import 'views/relatorio_view.dart';
+import 'views/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,7 @@ class ManutencaoApp extends StatelessWidget {
       title: 'Controle de Manutenção',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const MainShell(),
+      home: const SplashScreen(),
       routes: {
         '/lista': (context) => const ListaView(),
         '/abastecimento': (context) => const AbastecimentoView(),

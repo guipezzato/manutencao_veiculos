@@ -162,18 +162,17 @@ class _RelatorioViewState extends State<RelatorioView> {
   Widget _buildTotais() {
     return Row(
       children: [
-        _totalCard('Total do mês', 'R\$ ${_totalGeral.toStringAsFixed(0)}',
+        _totalCard('Total do mês', 'R\$ ${_totalGeral.toStringAsFixed(2).replaceAll('.', ',')}',
             AppTheme.primary, AppTheme.primaryLight, true),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             children: [
-              _miniCard('Manutenção',
-                  'R\$ ${_totalManutencao.toStringAsFixed(0)}', AppTheme.amber,
+              _miniCard('Manutenção', 'R\$ ${_totalManutencao.toStringAsFixed(2).replaceAll('.', ',')}',
+                  AppTheme.amber,
                   AppTheme.amberLight),
               const SizedBox(height: 8),
-              _miniCard('Combustível',
-                'R\$ ${_totalCombustivel.toStringAsFixed(0)}',
+              _miniCard('Combustível', 'R\$ ${_totalCombustivel.toStringAsFixed(2).replaceAll('.', ',')}',
                 blue,
                 const Color(0xFFDBEAFE),
               ),
@@ -218,22 +217,18 @@ class _RelatorioViewState extends State<RelatorioView> {
   Widget _miniCard(String label, String value, Color color, Color bg) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: TextStyle(fontSize: 12, color: color)),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: color)),
+          Text(label, style: TextStyle(fontSize: 11, color: color)),
+          const SizedBox(height: 2),
+          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
     );
@@ -287,14 +282,11 @@ class _RelatorioViewState extends State<RelatorioView> {
                               if (d.total > 0)
                                 Text(
                                   'R\$${d.total.toStringAsFixed(0)}',
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 9,
-                                    color: isSel
-                                        ? AppTheme.primary
-                                        : AppTheme.textSecondary,
-                                    fontWeight: isSel
-                                        ? FontWeight.w700
-                                        : FontWeight.w400,
+                                    fontSize: 8,
+                                    color: isSel ? AppTheme.primary : AppTheme.textSecondary,
+                                    fontWeight: isSel ? FontWeight.w700 : FontWeight.w400,
                                   ),
                                 ),
                               const SizedBox(height: 4),
@@ -399,7 +391,7 @@ class _RelatorioViewState extends State<RelatorioView> {
                     fontWeight: FontWeight.w500,
                     color: AppTheme.textPrimary)),
             Text(
-              'R\$ ${val.toStringAsFixed(0)} (${(pct * 100).toStringAsFixed(0)}%)',
+              'R\$ ${val.toStringAsFixed(2).replaceAll('.', ',')} (${(pct * 100).toStringAsFixed(0)}%)',
               style: const TextStyle(
                   fontSize: 13, color: AppTheme.textSecondary),
             ),

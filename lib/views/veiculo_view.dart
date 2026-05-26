@@ -138,6 +138,69 @@ class _VeiculoViewState extends State<VeiculoView> {
       ),
     );
   }
+  void _mostrarOpcoesVeiculo(Veiculo v) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              width: 40, height: 4,
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_rounded, color: AppTheme.primary),
+              title: const Text('Editar débitos'),
+              onTap: () {
+                Navigator.pop(context);
+                _editarDebitosVeiculo(v);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_forever_rounded, color: AppTheme.red),
+              title: const Text('Excluir veículo', style: TextStyle(color: AppTheme.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _confirmarExclusaoVeiculo(v);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmarExclusaoVeiculo(Veiculo v) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir Veículo?'),
+        content: Text('Deseja apagar "${v.nome}"? Essa ação não pode ser desfeita.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() => _loading = true);
+              final db = await DatabaseHelper.instance.database;
+              await db.delete('veiculo', where: 'id = ?', whereArgs: [v.id]);
+              _loadVeiculos();
+            },
+            child: const Text('Excluir', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _abrirCadastroCarro() {
     showModalBottomSheet(
@@ -349,45 +412,48 @@ class _VeiculoViewState extends State<VeiculoView> {
 
   Widget _buildCarroItemRow(Veiculo v) {
     final todosDebitosPagos = v.pagoIpva && v.statusLicenciamento.toLowerCase() == 'pago';
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: AppTheme.primaryLight,
-            child: const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(v.nome, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary)),
-                Text('Placa: ${v.placa}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-              ],
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => _mostrarOpcoesVeiculo(v),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.border),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: AppTheme.primaryLight,
+              child: const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 20),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: todosDebitosPagos ? AppTheme.greenLight : AppTheme.redLight,
-              borderRadius: BorderRadius.circular(8),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(v.nome, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary)),
+                  Text('Placa: ${v.placa}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                ],
+              ),
             ),
-            child: Text(
-              todosDebitosPagos ? 'Regularizado' : 'Possui Débitos',
-              style: TextStyle(color: todosDebitosPagos ? AppTheme.green : AppTheme.red, fontSize: 11, fontWeight: FontWeight.w600),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: todosDebitosPagos ? AppTheme.greenLight : AppTheme.redLight,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                todosDebitosPagos ? 'Regularizado' : 'Possui Débitos',
+                style: TextStyle(color: todosDebitosPagos ? AppTheme.green : AppTheme.red, fontSize: 11, fontWeight: FontWeight.w600),
+              ),
             ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }
-
   Widget _buildEmptyState() {
     return Center(
       child: Column(
