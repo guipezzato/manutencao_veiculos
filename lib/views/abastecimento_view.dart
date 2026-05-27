@@ -59,7 +59,7 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
     with SingleTickerProviderStateMixin {
   late TabController _tab;
   final _formKey = GlobalKey<FormState>();
-  final _editFormKey = GlobalKey<FormState>(); // Chave para o formulário de edição
+  final _editFormKey = GlobalKey<FormState>(); 
 
   final _veiculoCtrl = TextEditingController();
   final _litrosCtrl = TextEditingController();
@@ -165,7 +165,6 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
     }
   }
 
-  // 1. MENU SUPERIOR INFERIOR (OPÇÕES)
   void _mostrarOpcoes(Abastecimento a) {
     showModalBottomSheet(
       context: context,
@@ -209,7 +208,6 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
     );
   }
 
-  // 2. DIÁLOGO COM FORMULÁRIO COMPLETO PARA EDIÇÃO
   void _abrirFormularioEdicao(Abastecimento a) {
     final eVeiculoCtrl = TextEditingController(text: a.veiculo);
     final eLitrosCtrl = TextEditingController(text: a.litros.toString());
@@ -320,7 +318,6 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
     );
   }
 
-  // 3. CONFIRMAÇÃO DE EXCLUSÃO NO SQLITE
   Future<void> _confirmarExclusao(Abastecimento a) async {
     if (a.id == null) return;
 
@@ -360,7 +357,7 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
       final diff = _historico[i].kmAtual - _historico[i + 1].kmAtual;
       if (diff > 0) {
         totalKm += diff;
-        totalLitros += _historico[i + 1].litros; // 👈 era _historico[i].litros
+        totalLitros += _historico[i + 1].litros; 
       }
     }
     return totalLitros > 0 ? totalKm / totalLitros : 0;
@@ -581,7 +578,7 @@ class _AbastecimentoViewState extends State<AbastecimentoView>
         }
 
         return InkWell(
-          onTap: () => _mostrarOpcoes(a), // 👈 Ativa o clique para Editar/Deletar
+          onTap: () => _mostrarOpcoes(a), 
           borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.all(16),
