@@ -9,7 +9,6 @@ class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
   @override
-  // State público (HomeViewState sem underscore) para o GlobalKey do main.dart acessar o load()
   HomeViewState createState() => HomeViewState();
 }
 
@@ -24,7 +23,6 @@ class HomeViewState extends State<HomeView> {
     load();
   }
 
-  // Público para ser chamado via GlobalKey pelo main.dart após cadastro
   Future<void> load() async {
     final data = await _controller.listar();
     if (mounted) {
