@@ -4,8 +4,6 @@ import 'package:manutencao_veiculos/models/manutencao.dart';
 
 class CadastroView extends StatefulWidget {
   final Manutencao? manutencaoParaEdicao;
-  // Callback usado quando CadastroView é uma aba do IndexedStack
-  // Se for null, usa Navigator.pop (para uso como tela empilhada no futuro)
   final VoidCallback? onSaved;
 
   const CadastroView({super.key, this.manutencaoParaEdicao, this.onSaved});
@@ -92,7 +90,6 @@ class _CadastroViewState extends State<CadastroView> {
 
       if (!mounted) return;
 
-      // Mostra feedback de sucesso
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Manutenção salva com sucesso!'),
@@ -102,11 +99,9 @@ class _CadastroViewState extends State<CadastroView> {
       );
 
       if (widget.onSaved != null) {
-        // Modo aba: limpa o formulário e avisa o MainShell
         _limparFormulario();
         widget.onSaved!();
       } else {
-        // Modo rota empilhada: volta para a tela anterior normalmente
         Navigator.pop(context, true);
       }
     } catch (e) {
