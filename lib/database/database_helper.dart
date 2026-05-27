@@ -1,5 +1,5 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart'; // 👈 CORRIGIDO: Agora termina com .dart corretamente
+import 'package:path/path.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -18,9 +18,8 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2, // Subimos para a versão 2 para atualizar o banco existente
+      version: 2,
       onCreate: (db, version) async {
-        // Tabela de Manutenções
         await db.execute('''
           CREATE TABLE manutencoes(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +32,6 @@ class DatabaseHelper {
           )
         ''');
 
-        // Tabela de Veículos
         await db.execute('''
           CREATE TABLE IF NOT EXISTS veiculo (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
