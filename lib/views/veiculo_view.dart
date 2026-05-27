@@ -41,7 +41,6 @@ class _VeiculoViewState extends State<VeiculoView> {
     final rows = await db.query('veiculo', orderBy: 'id DESC');
 
     setState(() {
-      // O deMap/fromMap precisa converter os dados e trazer o ID gerado pelo banco
       _veiculos = rows.map((e) => Veiculo.fromMap(e)).toList();
       _loading = false;
     });
@@ -298,7 +297,6 @@ class _VeiculoViewState extends State<VeiculoView> {
           ? _buildEmptyState()
           : Column(
         children: [
-          // 🛑 SEGURANÇA: Só tenta desenhar o card do topo se a lista NÃO estiver vazia
           if (_veiculos.isNotEmpty)
             _buildCarroAtivoCard(_veiculos.first),
 
@@ -311,14 +309,12 @@ class _VeiculoViewState extends State<VeiculoView> {
             ),
           ),
 
-          // Lista dos outros carros cadastrados
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: _veiculos.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, index) {
-                // Se index for 0, ele já está em destaque no topo, então ignora na lista de baixo
                 if (index == 0) return const SizedBox.shrink();
                 return _buildCarroItemRow(_veiculos[index]);
               },
@@ -331,7 +327,7 @@ class _VeiculoViewState extends State<VeiculoView> {
 
   Widget _buildCarroAtivoCard(Veiculo v) {
     return InkWell(
-      onTap: () => _editarDebitosVeiculo(v), // 👈 Ativa o clique para gerenciar os débitos!
+      onTap: () => _editarDebitosVeiculo(v), 
       borderRadius: BorderRadius.circular(20),
       child: Container(
         margin: const EdgeInsets.all(16),
@@ -371,7 +367,6 @@ class _VeiculoViewState extends State<VeiculoView> {
             const Divider(color: Colors.white24, height: 1),
             const SizedBox(height: 16),
 
-            // Infos de Débitos
             _rowDebitoDetail(
                 icon: Icons.monetization_on_outlined,
                 label: 'IPVA (R\$ ${v.valorIpva.toStringAsFixed(2)})',
