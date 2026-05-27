@@ -4,7 +4,7 @@ class Veiculo {
   final String placa;
   final double valorIpva;
   final bool pagoIpva;
-  final String statusLicenciamento; // 'Pago' ou 'Pendente'
+  final String statusLicenciamento; 
 
   Veiculo({
     this.id,
@@ -20,7 +20,7 @@ class Veiculo {
     'nome': nome,
     'placa': placa,
     'valor_ipva': valorIpva,
-    'pago_ipva': pagoIpva ? 1 : 0, // SQLite não tem boolean nativo, salvamos como 0 ou 1
+    'pago_ipva': pagoIpva ? 1 : 0, 
     'status_licenciamento': statusLicenciamento,
   };
 
