@@ -48,7 +48,6 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  // GlobalKey para acessar o _load() da HomeView após salvar
   final GlobalKey<HomeViewState> _homeKey = GlobalKey<HomeViewState>();
 
   late final List<Widget> _screens;
@@ -65,11 +64,8 @@ class _MainShellState extends State<MainShell> {
     ];
   }
 
-  // Chamado pelo CadastroView após salvar com sucesso
   void _aoSalvar() {
-    // Recarrega a lista da HomeView
     _homeKey.currentState?.load();
-    // Volta para a aba Home
     setState(() => _currentIndex = 0);
   }
 
